@@ -96,6 +96,10 @@ const builderOptions = {
       from: path.resolve(__dirname, "build", "vendored", "7z", sevenZipFile),
       to: extraFilePrefix + sevenZipFile,
     },
+    {
+      from: path.resolve(__dirname, "python", "extract_pitch.py"),
+      to: path.join(extraFilePrefix, "extract_pitch.py"),
+    },
   ],
   // electron-builder installer
   productName: "VOICEVOX",

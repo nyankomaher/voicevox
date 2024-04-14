@@ -314,4 +314,7 @@ export const api: Sandbox = {
   reloadApp(/* obj: { isMultiEngineOffMode: boolean } */) {
     throw new Error(`Not supported on Browser version: reloadApp`);
   },
+  analyzeYourVoice: async () => {
+    throw new Error(`Not supported on Browser version: analyzeYourVoice`);
+  },
 };

@@ -676,6 +676,10 @@ export type AudioCommandStoreTypes = {
       voice: Voice;
     }): AudioKey[];
   };
+
+  COMMAND_ADJUST_BY_YOUR_VOICE: {
+    action(payload: { audioKey: AudioKey; audioData: Blob }): void;
+  };
 };
 
 /*

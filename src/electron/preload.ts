@@ -278,6 +278,14 @@ const api: Sandbox = {
   reloadApp: async ({ isMultiEngineOffMode }) => {
     return await ipcRendererInvoke("RELOAD_APP", { isMultiEngineOffMode });
   },
+
+  analyzeYourVoice: async (text, audioData) => {
+    return await ipcRendererInvoke(
+      "ANALYZE_YOUR_VOICE",
+      text,
+      await audioData.arrayBuffer()
+    );
+  },
 };
 
 contextBridge.exposeInMainWorld(SandboxKey, api);

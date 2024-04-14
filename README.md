@@ -1,242 +1,84 @@
-# VOICEVOX
+# VOICEVOX with Your Voice
 
-[![releases](https://img.shields.io/github/v/release/VOICEVOX/voicevox?label=Release)](https://github.com/VOICEVOX/voicevox/releases)
-[![build](https://github.com/VOICEVOX/voicevox/actions/workflows/build.yml/badge.svg)](https://github.com/VOICEVOX/voicevox/actions/workflows/build.yml)
-[![test](https://github.com/VOICEVOX/voicevox/actions/workflows/test.yml/badge.svg)](https://github.com/VOICEVOX/voicevox/actions/workflows/test.yml)
-[![Discord](https://img.shields.io/discord/879570910208733277?color=5865f2&label=&logo=discord&logoColor=ffffff)](https://discord.gg/WMwWetrzuh)
+VOICEVOXのイントネーション調整を手動でやるのが面倒だったため、自分の声でイントネーションを設定できるようにしました。  
 
-[VOICEVOX](https://voicevox.hiroshiba.jp/) のエディターです。
+**⚠️EXPERIMENTAL⚠️**  
+**⚠️ADHOC⚠️**  
 
-（エンジンは [VOICEVOX ENGINE](https://github.com/VOICEVOX/voicevox_engine/) 、
-コアは [VOICEVOX CORE](https://github.com/VOICEVOX/voicevox_core/) 、
-全体構成は [こちら](./docs/全体構成.md) に詳細があります。）
+## 感謝
 
-## ユーザーの方へ
+### VOICEVOX
 
-こちらは開発用のページになります。利用方法に関しては[VOICEVOX 公式サイト](https://voicevox.hiroshiba.jp/) をご覧ください。
+言わずと知れたVOICEVOXです。感謝。  
+https://voicevox.hiroshiba.jp/
 
-## 貢献者の方へ
+### 各種音声解析ツール
 
-VOICEVOX のエディタは Electron・TypeScript・Vue・Vuex などが活用されており、全体構成がわかりにくくなっています。  
-[コードの歩き方](./docs/コードの歩き方.md)で構成を紹介しているので、開発の一助になれば幸いです。
+これらのツールのお陰で発声した文字ごとにピッチを抽出することができます。感謝。  
+https://github.com/timmahrt/praatIO  
+https://github.com/julius-speech/segmentation-kit/tree/master  
+https://github.com/JeremyCCHsu/Python-Wrapper-for-World-Vocoder  
 
-Issue を解決するプルリクエストを作成される際は、別の方と同じ Issue に取り組むことを避けるため、
-Issue 側で取り組み始めたことを伝えるか、最初に Draft プルリクエストを作成してください。
+## 前提
 
-[VOICEVOX 非公式 Discord サーバー](https://discord.gg/WMwWetrzuh)にて、開発の議論や雑談を行っています。気軽にご参加ください。
+- [VOICEVOX](https://voicevox.hiroshiba.jp/)
+- [Praat](https://www.fon.hum.uva.nl/praat/)
+- [Julius 音素セグメンテーションキット](https://github.com/julius-speech/segmentation-kit/tree/master)
+- python3
+- perl5
+- Mac
 
-### デザインガイドライン
+## インストール
 
-[UX・UI デザインの方針](./docs/UX・UIデザインの方針.md)をご参照ください。
+### VOICEVOX
 
-## 環境構築
+[VOICEVOX](https://github.com/VOICEVOX/voicevox)をforkしていますので、まずはそちらのインストール手順を実行してください。
 
-[.node-version](.node-version) に記載されているバージョンの Node.js をインストールしてください。  
-Node.js の管理ツール（[nvs](https://github.com/jasongin/nvs)や[Volta](https://volta.sh)など）を利用すると簡単にインストールでき、Node.js の自動切り替えもできます。
+### pythonライブラリ
 
-Node.js をインストール後、[このリポジトリ](https://github.com/VOICEVOX/voicevox.git) を
-Fork して `git clone` し、次のコマンドを実行してください。
-
-```bash
-npm ci
+```sh
+pip install numpy scipy pyworld praatio
 ```
 
-## 実行
+### .env設定
 
-`.env.production`をコピーして`.env`を作成し、`VITE_DEFAULT_ENGINE_INFOS`内の`executionFilePath`に`voicevox_engine`のパスを指定します。
-
-[製品版 VOICEVOX](https://voicevox.hiroshiba.jp/) のディレクトリのパスを指定すれば動きます。
-
-Windows の場合でもパスの区切り文字は`\`ではなく`/`なのでご注意ください。
-
-また、macOS 向けの`VOICEVOX.app`を利用している場合は`/path/to/VOICEVOX.app/Contents/MacOS/run`を指定してください。
-
-Linux の場合は、[Releases](https://github.com/VOICEVOX/voicevox/releases/)から入手できる tar.gz 版に含まれる`run`コマンドを指定してください。
-AppImage 版の場合は`$ /path/to/VOICEVOX.AppImage --appimage-mount`でファイルシステムをマウントできます。
-
-VOICEVOX エディタの実行とは別にエンジン API のサーバを立てている場合は`executionFilePath`を指定する必要はありません。
-これは製品版 VOICEVOX を起動している場合もあてはまります。
-
-また、エンジン API の宛先エンドポイントを変更する場合は`VITE_DEFAULT_ENGINE_INFOS`内の`host`を変更してください。
-
-```bash
-npm run electron:serve
+```sh
+# python
+PYTHON=/path/to/your/python
+# perl
+PERL=/path/to/your/perl
+# Julius 音素セグメンテーションキット
+EXTERNAL_SEGMENTATION_KIT=/path/to/your/segmentation-kit
+# TextGridConverter
+EXTERNAL_TEXT_GRID_CONTAINER=/path/to/your/TextGridConverter
 ```
 
-音声合成エンジンのリポジトリはこちらです <https://github.com/VOICEVOX/voicevox_engine>
+上記のほか、VITE_DEFAULT_ENGINE_INFOSのexecutionFilePathをお使いの環境のものに合わせてください。
 
-### ブラウザ版の実行（開発中）
+## 使用方法
 
-別途音声合成エンジンを起動し、以下を実行して表示された localhost へアクセスします。
+1. fork元の[VOICEVOX](https://github.com/VOICEVOX/voicevox)を参考にしてVOICEVOXを起動してください。  
+1. セリフを入力し、イントネーション欄にセリフのイントネーションを表示させてください。  
+1. イントネーション欄の左上にある、マイクアイコンの録音ボタンをクリックしてください。  
+1. お好みのイントネーションでセリフを喋ってください。  
+1. マイクアイコンを再度クリックしてください。録音が停止され、イントネーションが反映されます。  
 
-```bash
-npm run browser:serve
-```
+### チューニング
 
-また、main ブランチのビルド結果がこちらにデプロイされています <https://voicevox-browser-dev.netlify.app/#/talk>  
-今はローカル PC 上で音声合成エンジンを起動する必要があります。
+人によって声の高さは違いますので、望みのピッチにするためにはチューニングが必要です。  
+public/python/extract_pitch.py の calc_adjusted_pitch を自分の声に合うように修正してください。  
 
-## ビルド
+## メモ
 
-```bash
-npm run electron:build
-```
-
-## テスト
-
-### 単体テスト
-
-```bash
-npm run test:unit
-npm run test-watch:unit # 監視モード
-```
-
-### ブラウザ End to End テスト
-
-Electron の機能が不要な、UI や音声合成などの End to End テストを実行します。
-
-> **Note**
-> 一部のエンジンの設定を書き換えるテストは、CI(Github Actions)上でのみ実行されるようになっています。
-
-```bash
-npm run test:browser-e2e
-npm run test-watch:browser-e2e # 監視モード
-npm run test-watch:browser-e2e -- --headed # テスト中の UI を表示
-```
-
-Playwright を使用しているためテストパターンを生成することもできます。
-**ブラウザ版を起動している状態で**以下のコマンドを実行してください。
-
-```bash
-npx playwright codegen http://localhost:5173/#/talk  --viewport-size=800,600
-```
-
-詳細は [Playwright ドキュメントの Test generator](https://playwright.dev/docs/codegen-intro) を参照してください。
-
-#### スクリーンショットの更新
-
-ブラウザ End to End テストでは Visual Regression Testing を行っています。
-現在 VRT テストは Windows のみで行っています。
-以下の手順でスクリーンショットを更新できます：
-
-##### Github Actions で更新する場合
-
-1. フォークしたリポジトリの設定で GitHub Actions を有効にします。
-2. リポジトリの設定の Actions > General > Workflow permissions で Read and write permissions を選択します。
-3. `[update snapshots]` という文字列をコミットメッセージに含めてコミットします。
-
-   ```bash
-   git commit -m "UIを変更 [update snapshots]"
-   ```
-
-4. Github Workflow が完了すると、更新されたスクリーンショットがコミットされます。
-
-##### ローカルで更新する場合
-
-ローカル PC の OS に対応したもののみが更新されます。
-
-```bash
-npm run test:browser-e2e -- --update-snapshots
-```
-
-### Electron End to End テスト
-
-Electron の機能が必要な、エンジン起動・終了などを含めた End to End テストを実行します。
-
-```bash
-npm run test:electron-e2e
-npm run test-watch:electron-e2e # 監視モード
-```
-
-## 依存ライブラリのライセンス情報の生成
-
-依存ライブラリのライセンス情報は Github Workflow でのビルド時に自動生成されます。以下のコマンドで生成できます。
-
-```bash
-# get licenses.json from voicevox_engine as engine_licenses.json
-
-npm run license:generate -- -o voicevox_licenses.json
-npm run license:merge -- -o public/licenses.json -i engine_licenses.json -i voicevox_licenses.json
-```
-
-## コードフォーマット
-
-コードのフォーマットを整えます。プルリクエストを送る前に実行してください。
-
-```bash
-npm run fmt
-```
-
-## タイポチェック
-
-[typos](https://github.com/crate-ci/typos) を使ってタイポのチェックを行っています。
-[typos をインストール](https://github.com/crate-ci/typos#install) した後
-
-```bash
-typos
-```
-
-でタイポチェックを行えます。
-もし誤判定やチェックから除外すべきファイルがあれば
-[設定ファイルの説明](https://github.com/crate-ci/typos#false-positives) に従って`_typos.toml`を編集してください。
-
-## 型チェック
-
-TypeScript の型チェックを行います。
-
-```bash
-npm run typecheck
-```
-
-## Markdownlint
-
-Markdown の文法チェックを行います。
-
-```bash
-npm run markdownlint
-```
-
-## Shellcheck
-
-ShellScript の文法チェックを行います。
-インストール方法は [こちら](https://github.com/koalaman/shellcheck#installing) を参照してください。
-
-```bash
-shellcheck ./build/*.sh
-```
-
-## OpenAPI generator
-
-音声合成エンジンが起動している状態で以下のコマンドを実行してください。
-
-```bash
-curl http://127.0.0.1:50021/openapi.json >openapi.json
-
-npx openapi-generator-cli generate \
-    -i openapi.json \
-    -g typescript-fetch \
-    -o src/openapi/ \
-    --additional-properties "modelPropertyNaming=camelCase,supportsES6=true,withInterfaces=true,typescriptThreePlus=true"
-
-npm run fmt
-```
-
-### OpanAPI generator のバージョンアップ
-
-新しいバージョンの確認・インストールは次のコマンドで行えます。
-
-```bash
-npx openapi-generator-cli version-manager list
-```
-
-## VS Code でのデバッグ実行
-
-npm scripts の `serve` や `electron:serve` などの開発ビルド下では、ビルドに使用している vite で sourcemap を出力するため、ソースコードと出力されたコードの対応付けが行われます。
-
-`.vscode/launch.template.json` をコピーして `.vscode/launch.json` を作成することで、開発ビルドを VS Code から実行し、デバッグを可能にするタスクが有効になります。
+* 基本的に、アクセントタブで正しく語句を区切って、アクセントを設定してあげればいい感じになることが多いです。基本的に、本ツールの出番はありません。
+  * ちょっと変わったイントネーションにしたいときは効果があるかもしれません。
+  * 話者の演技力の問題もあると思いますが、ピッチをうまく取ってくれたり取ってくれなかったりします。
+  * 役に立ったり立たなかったりするツールです。
+* 入力デバイスを変更すると、VOICEVOXの再起動が必要になるようです。
+  * コンソールにTextGridがNotFound的なエラーが出ますが、音声が取れていないためのようです。
+  * MediaStreamを毎回作り直せば治る？
+* ノイズが少ない方が精度は良くなると思いますが、MacBookAirの内蔵マイクでもなんとかなるようです？
 
 ## ライセンス
 
-LGPL v3 と、ソースコードの公開が不要な別ライセンスのデュアルライセンスです。
-別ライセンスを取得したい場合は、ヒホに求めてください。  
-X アカウント: [@hiho_karuta](https://x.com/hiho_karuta)
+LGPL v3

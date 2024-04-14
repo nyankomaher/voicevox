@@ -40,3 +40,6 @@ electron-builder.yml
 
 # generated licenses.json
 /*licenses.json
+
+.venv
+public/python/test

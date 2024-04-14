@@ -246,6 +246,7 @@ export interface Sandbox {
   uninstallVvppEngine(engineId: EngineId): Promise<boolean>;
   validateEngineDir(engineDir: string): Promise<EngineDirValidationResult>;
   reloadApp(obj: { isMultiEngineOffMode?: boolean }): Promise<void>;
+  analyzeYourVoice(text: string, audioData: Blob): Promise<AnalyzedYourPitch[]>;
 }
 
 export type AppInfos = {
@@ -666,3 +667,9 @@ export interface MessageBoxReturnValue {
 }
 
 export const SandboxKey = "electron" as const;
+
+export type AnalyzedYourPitch = {
+  mora: string;
+  label: string;
+  pitch: number;
+};

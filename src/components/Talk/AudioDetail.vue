@@ -2,6 +2,17 @@
   <div class="full-height root relative-absolute-wrapper">
     <div>
       <div class="side">
+        <div class="voice-button-wrapper">
+          <q-btn
+            fab
+            color="primary"
+            text-color="display-on-primary"
+            icon="mic"
+            :disable="!isReadyToRecord || !audioItem.text"
+            :class="{ '-recording': isRecording }"
+            @click="toggleRecord"
+          ></q-btn>
+        </div>
         <div class="detail-selector">
           <q-tabs v-model="selectedDetail" dense vertical class="text-display">
             <q-tab name="accent" label="ｱｸｾﾝﾄ" />
@@ -82,6 +93,12 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
+import {
+  IMediaRecorder,
+  MediaRecorder,
+  register,
+} from "extendable-media-recorder";
+import { connect } from "extendable-media-recorder-wav-encoder";
 import AccentPhrase from "./AccentPhrase.vue";
 import ToolTip from "@/components/ToolTip.vue";
 import { useStore } from "@/store";
@@ -241,6 +258,61 @@ watch(accentPhrases, async () => {
   scrollToActivePoint();
 });
 
+const useAdjustByVoice = () => {
+  const isReadyToRecord = ref(false);
+  const isRecording = ref(false);
+
+  let mediaRecorder: IMediaRecorder | null = null;
+
+  (async function () {
+    try {
+      // プロジェクトを読み込み直したりして2回目にここが実行されるとエラーが発生するので、そのエラーを無視する。
+      // 本来はチェック入れるべき・・・
+      await register(await connect());
+    } catch {
+      // noop
+    }
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const audioContext = new AudioContext({ sampleRate: 16000 });
+    const mediaStreamAudioSourceNode = new MediaStreamAudioSourceNode(
+      audioContext,
+      { mediaStream: stream }
+    );
+    const mediaStreamAudioDestinationNode = new MediaStreamAudioDestinationNode(
+      audioContext,
+      { channelCount: 1 }
+    );
+    mediaStreamAudioSourceNode.connect(mediaStreamAudioDestinationNode);
+    mediaRecorder = new MediaRecorder(mediaStreamAudioDestinationNode.stream, {
+      mimeType: "audio/wav",
+    });
+    mediaRecorder.addEventListener("dataavailable", async (event) => {
+      if (!audioItem.value.text) return;
+      await store.dispatch("COMMAND_ADJUST_BY_YOUR_VOICE", {
+        audioKey: props.activeAudioKey,
+        audioData: event.data,
+      });
+    });
+    isReadyToRecord.value = true;
+  })();
+
+  const toggleRecord = async () => {
+    if (!isReadyToRecord.value || !mediaRecorder) return;
+
+    if (isRecording.value) {
+      isRecording.value = false;
+      mediaRecorder.stop();
+    } else {
+      isRecording.value = true;
+      mediaRecorder.start();
+    }
+  };
+
+  return { isReadyToRecord, isRecording, toggleRecord };
+};
+
+const { isReadyToRecord, isRecording, toggleRecord } = useAdjustByVoice();
+
 // audio play
 const play = async () => {
   try {
@@ -377,6 +449,7 @@ const isAltKeyDown = useAltKey();
 
   .side {
     height: 100%;
+    position: relative;
 
     display: flex;
     flex-direction: column;
@@ -387,6 +460,44 @@ const isAltKeyDown = useAltKey();
         background-color: colors.$primary;
       }
     }
+    .voice-button-wrapper {
+      position: absolute;
+      top: 5px;
+      left: calc(100% + 10px);
+
+      button {
+        &.-recording {
+          color: #f22;
+
+          &::after {
+            @keyframes recording {
+              0% {
+                width: 0%;
+                opacity: 1;
+              }
+              100% {
+                width: 120%;
+                opacity: 0;
+              }
+            }
+
+            margin: auto;
+            content: "";
+            display: block;
+            position: absolute;
+            inset: 0;
+            width: 0%;
+            aspect-ratio: 1/1;
+            border-radius: 50%;
+            background-color: #fca;
+            opacity: 0;
+            animation: recording 1.5s 0.8s cubic-bezier(0.33, 1, 0.68, 1)
+              infinite;
+          }
+        }
+      }
+    }
+
     .play-button-wrapper {
       align-self: flex-end;
       display: flex;

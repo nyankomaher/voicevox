@@ -1,7 +1,9 @@
 "use strict";
 
 import path from "path";
+import os from "os";
 
+import child_process from "child_process";
 import fs from "fs";
 import {
   app,
@@ -891,6 +893,52 @@ ipcMainHandle("READ_FILE", async (_, { filePath }) => {
     // throwだと`.code`の情報が消えるのでreturn
     const a = e as SystemError;
     return failure(a.code, a);
+  }
+});
+
+ipcMainHandle("ANALYZE_YOUR_VOICE", async (_, text, audioBuffer) => {
+  let tempdir = null;
+  try {
+    // tempdir = path.join(__dirname, "..", "python", "test");
+    // fs.mkdirSync(tempdir);
+    tempdir = await fs.promises.mkdtemp(
+      path.join(os.tmpdir(), "nyankomaher-vwyv-")
+    );
+    fs.writeFileSync(path.join(tempdir, "voice.txt"), text);
+    fs.writeFileSync(path.join(tempdir, "voice.wav"), Buffer.from(audioBuffer));
+
+    child_process.execSync(
+      `"${import.meta.env.VITE_PERL}" segment_julius.pl "${tempdir}"`,
+      {
+        cwd: import.meta.env.VITE_SEGMENTATION_KIT,
+      }
+    );
+    // const stdout = child_process.execSync(
+    child_process.execSync(
+      `"${import.meta.env.VITE_PYTHON}" convert_label.py "${tempdir}" y`,
+      {
+        cwd: import.meta.env.VITE_TEXT_GRID_CONTAINER,
+      }
+    );
+    // console.log(stdout.toString());
+    let script = path.join(__dirname, "..", "python", "extract_pitch.py");
+    if (!fs.existsSync(script)) {
+      script = path.join(process.resourcesPath, "python", "extract_pitch.py");
+    }
+    child_process.execSync(
+      `"${import.meta.env.VITE_PYTHON}" "${script}" "${tempdir}"`
+    );
+
+    const output = path.join(tempdir, "pitchByMora.json");
+    const pitchByMoras = JSON.parse(fs.readFileSync(output, "utf8"));
+    console.log(pitchByMoras);
+    return pitchByMoras;
+  } finally {
+    // 一時ディレクトリを削除
+    if (tempdir) {
+      console.log({ tempdir });
+      // fs.promises.rm(tempdir, { recursive: true, force: true });
+    }
   }
 });
 

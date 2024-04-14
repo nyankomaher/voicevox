@@ -11,6 +11,7 @@ import {
   EngineSettingType,
   EngineId,
   MessageBoxReturnValue,
+  AnalyzedYourPitch,
 } from "@/type/preload";
 import { AltPortInfos } from "@/store/type";
 import { Result } from "@/type/result";
@@ -297,6 +298,11 @@ export type IpcIHData = {
   READ_FILE: {
     args: [obj: { filePath: string }];
     return: Result<ArrayBuffer>;
+  };
+
+  ANALYZE_YOUR_VOICE: {
+    args: [text: string, audioBuffer: ArrayBuffer];
+    return: Promise<AnalyzedYourPitch[]>;
   };
 };
 

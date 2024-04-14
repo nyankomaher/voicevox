@@ -1,6 +1,9 @@
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import Encoding from "encoding-japanese";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import jaconv from "jaconv";
 import { createUILockAction, withProgress } from "./ui";
 import {
   AudioItem,
@@ -3001,6 +3004,46 @@ export const audioCommandStore = transformCommandStore(
           return audioKeys;
         }
       ),
+    },
+
+    COMMAND_ADJUST_BY_YOUR_VOICE: {
+      async action({ state, commit }, { audioKey, audioData }) {
+        const audioItem = state.audioItems[audioKey];
+        const query = audioItem.query;
+        if (!query) return;
+        const accentPhrases = query.accentPhrases;
+        const moras = accentPhrases.flatMap((phrase) => phrase.moras);
+        const text = jaconv.toHiragana(
+          moras.reduce((text, mora) => text + mora.text, "")
+        );
+        console.log({ text, accentPhrases });
+        const pitches = await window.electron.analyzeYourVoice(text, audioData);
+        console.log({ pitches });
+
+        const newAccentPhrases: AccentPhrase[] = JSON.parse(
+          JSON.stringify(query.accentPhrases)
+        );
+        const newMoras = newAccentPhrases.flatMap((phrase) => phrase.moras);
+        for (let i = 0; i < newMoras.length; i++) {
+          const mora = newMoras[i];
+          const pitch = pitches[i];
+          const katakana = jaconv.toKatakana(pitch.mora);
+          console.log({ text: mora.text, katakana });
+          if (mora.text != katakana) {
+            console.warn(
+              `Text is not match: ${mora.text} / ${katakana}`,
+              mora,
+              pitch
+            );
+          }
+          mora.pitch = pitch.pitch;
+        }
+
+        commit("COMMAND_CHANGE_ACCENT", {
+          audioKey,
+          accentPhrases: newAccentPhrases,
+        });
+      },
     },
   })
 );

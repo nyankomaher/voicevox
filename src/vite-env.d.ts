@@ -9,6 +9,10 @@ interface ImportMetaEnv {
   readonly VITE_LATEST_UPDATE_INFOS_URL: string;
   readonly VITE_GTM_CONTAINER_ID: string;
   readonly VITE_TARGET: "electron" | "browser";
+  readonly VITE_PYTHON: string;
+  readonly VITE_PERL: string;
+  readonly VITE_SEGMENTATION_KIT: string;
+  readonly VITE_TEXT_GRID_CONTAINER: string;
 }
 
 interface ImportMeta {
